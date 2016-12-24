@@ -4,23 +4,36 @@ package com.wuchao.rest;
  * Created by air on 16/12/24.
  */
 public class ResourceData {
-    private long start;
-    private long total;
+    private long playcount;
+    private long cmtcount;
+    private String source;
+    private long ts;
 
-    public void setStart(long start) {
-        this.start = start;
+    public void setPlaycount(long playcount) {
+        this.playcount = playcount;
     }
 
-    public long getStart() {
-        return start;
+    public long getPlaycount() {
+        return playcount;
     }
 
-    public long getTotal() {
-        return total;
+    public void setCmtcount(long cmtcount) {
+        this.cmtcount = cmtcount;
     }
 
-    public void setTotal(long total) {
-        this.total = total;
+    public long getCmtcount() {
+        return cmtcount;
     }
 
+    public void setTs(long ts) {
+        this.ts = ts;
+    }
+
+    public long getTs() {
+        return ts;
+    }
+
+    public String getSource() {return source;}
+
+    public void setSource(String source) {this.source = source;}
 }
