@@ -27,17 +27,19 @@ public class Application {
     @RequestMapping("/data")
     public ResponseEntity data() {
         Connection connection = null;
-        ResourceData rd = new ResourceData();
+        ResourceCollection rc = new ResourceCollection();
         try {
             connection = DriverManager.getConnection("jdbc:postgresql://hostname:port/dbname","username", "password");
             String sql = " select playcount, cmtcount, source, ts from playdata limit 1";
             PreparedStatement st = connection.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
             while(rs.next()){
+                ResourceData rd = new ResourceData();
                 rd.setPlaycount(rs.getLong(1));
                 rd.setCmtcount(rs.getLong(2));
                 rd.setSource(rs.getString(3));
                 rd.setTs(rs.getLong(4));
+                rc.add(rd);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -48,7 +50,7 @@ public class Application {
                 e.printStackTrace();
             }
         }
-        return new ResponseEntity<ResourceData>(rd, HttpStatus.OK);
+        return new ResponseEntity<ResourceCollection>(rc, HttpStatus.OK);
     }
 
     public static void main(String[] args) {
