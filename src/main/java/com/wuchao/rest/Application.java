@@ -30,7 +30,7 @@ public class Application {
         ResourceCollection rc = new ResourceCollection();
         try {
             connection = DriverManager.getConnection("jdbc:postgresql://hostname:port/dbname","username", "password");
-            String sql = " select playcount, cmtcount, source, ts from playdata limit 1";
+            String sql = " select playcount, cmtcount, source, ts from playdata limit 2";
             PreparedStatement st = connection.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
             while(rs.next()){

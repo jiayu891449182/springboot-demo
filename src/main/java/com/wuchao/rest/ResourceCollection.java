@@ -8,8 +8,12 @@ import java.util.ArrayList;
 public class ResourceCollection {
     private ArrayList<ResourceData> list;
 
+    public ResourceCollection(){
+        this.list = new ArrayList<ResourceData>();
+    }
+
     public void add(ResourceData rd) {
-        list.add(rd);
+        this.list.add(rd);
     }
 
     public void setList(ArrayList<ResourceData> list) {
@@ -17,6 +21,6 @@ public class ResourceCollection {
     }
 
     public ArrayList<ResourceData> getList() {
-        return list;
+        return this.list;
     }
 }
