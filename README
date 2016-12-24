@@ -1,0 +1,5 @@
+mvn package spring-boot:repackage
+
+java -jar target/springboot-demo-1.0-SNAPSHOT.jar
+
+curl http://localhost:8080/
