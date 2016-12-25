@@ -8,13 +8,31 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.beans.PropertyVetoException;
 import java.sql.*;
 
 @SpringBootApplication
 @RestController
 public class Application {
 
-    private static ComboPooledDataSource cpds= new ComboPooledDataSource("postgresql");
+    private static ComboPooledDataSource cpds;
+
+    static {
+        cpds = new ComboPooledDataSource();
+        try {
+            cpds.setDriverClass("org.postgresql.Driver");
+        } catch (PropertyVetoException e) {
+            e.printStackTrace();
+        }
+        cpds.setJdbcUrl("jdbc:postgresql://hostname:port/dbname");
+        cpds.setUser("username");
+        cpds.setPassword("password");
+        cpds.setInitialPoolSize(10);
+        cpds.setMaxIdleTime(30);
+        cpds.setMaxPoolSize(100);
+        cpds.setMinPoolSize(10);
+        cpds.setMaxStatements(200);
+    }
 
     @RequestMapping("/")
     public String greeting() {
