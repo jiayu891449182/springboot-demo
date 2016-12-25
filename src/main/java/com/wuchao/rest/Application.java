@@ -1,5 +1,6 @@
 package com.wuchao.rest;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,8 @@ import java.sql.*;
 @SpringBootApplication
 @RestController
 public class Application {
+
+    private static ComboPooledDataSource cpds= new ComboPooledDataSource("postgresql");
 
     @RequestMapping("/")
     public String greeting() {
@@ -26,10 +29,9 @@ public class Application {
 
     @RequestMapping("/data")
     public ResponseEntity data() {
-        Connection connection = null;
         ResourceData rd = new ResourceData();
         try {
-            connection = DriverManager.getConnection("jdbc:postgresql://hostname:port/dbname","username", "password");
+            Connection connection = cpds.getConnection();
             String sql = " select playcount, cmtcount, source, ts from playdata limit 1";
             PreparedStatement st = connection.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
@@ -41,27 +43,20 @@ public class Application {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
-        return new ResponseEntity<>(rd, HttpStatus.OK);
+        return new ResponseEntity<ResourceData>(rd, HttpStatus.OK);
     }
 
     @RequestMapping("/list")
     public ResponseEntity list() {
-        Connection connection = null;
         ResourceCollection rc = new ResourceCollection();
         try {
-            connection = DriverManager.getConnection("jdbc:postgresql://hostname:port/dbname","username", "password");
+            Connection connection = cpds.getConnection();
             String sql = " select playcount, cmtcount, source, ts from playdata limit 2";
             PreparedStatement st = connection.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
+            ResourceData rd = new ResourceData();
             while(rs.next()){
-                ResourceData rd = new ResourceData();
                 rd.setPlaycount(rs.getLong(1));
                 rd.setCmtcount(rs.getLong(2));
                 rd.setSource(rs.getString(3));
@@ -70,14 +65,8 @@ public class Application {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
-        return new ResponseEntity<>(rc, HttpStatus.OK);
+        return new ResponseEntity<ResourceCollection>(rc, HttpStatus.OK);
     }
 
     public static void main(String[] args) {
