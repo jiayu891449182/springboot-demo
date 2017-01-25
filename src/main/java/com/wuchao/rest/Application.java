@@ -55,45 +55,57 @@ public class Application {
     }
 
     @RequestMapping("/data")
-    public ResponseEntity data() throws SQLException {
+    public ResponseEntity data() {
         ResourceData rd = new ResourceData();
-        Connection connection = cpds.getConnection();
-        String sql = " select playcount, cmtcount, source, ts from playdata limit 1";
-        PreparedStatement st = connection.prepareStatement(sql);
-        ResultSet rs = st.executeQuery();
-        while(rs.next()){
-            rd.setPlaycount(rs.getLong(1));
-            rd.setCmtcount(rs.getLong(2));
-            rd.setSource(rs.getString(3));
-            rd.setTs(rs.getLong(4));
+        try {
+            Connection connection = cpds.getConnection();
+            String sql = " select playcount, cmtcount, source, ts from playdata limit 1";
+            PreparedStatement st = connection.prepareStatement(sql);
+            ResultSet rs = st.executeQuery();
+            while(rs.next()){
+                rd.setPlaycount(rs.getLong(1));
+                rd.setCmtcount(rs.getLong(2));
+                rd.setSource(rs.getString(3));
+                rd.setTs(rs.getLong(4));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return new ResponseEntity<ResourceData>(rd, HttpStatus.OK);
     }
 
     @RequestMapping("/list")
-    public ResponseEntity list() throws SQLException {
+    public ResponseEntity list() {
         ResourceCollection rc = new ResourceCollection();
-        Connection connection = cpds.getConnection();
-        String sql = " select playcount, cmtcount, source, ts from playdata limit 2";
-        PreparedStatement st = connection.prepareStatement(sql);
-        ResultSet rs = st.executeQuery();
-        ResourceData rd = new ResourceData();
-        while(rs.next()){
-            rd.setPlaycount(rs.getLong(1));
-            rd.setCmtcount(rs.getLong(2));
-            rd.setSource(rs.getString(3));
-            rd.setTs(rs.getLong(4));
-            rc.add(rd);
+        try {
+            Connection connection = cpds.getConnection();
+            String sql = " select playcount, cmtcount, source, ts from playdata limit 2";
+            PreparedStatement st = connection.prepareStatement(sql);
+            ResultSet rs = st.executeQuery();
+            ResourceData rd = new ResourceData();
+            while(rs.next()){
+                rd.setPlaycount(rs.getLong(1));
+                rd.setCmtcount(rs.getLong(2));
+                rd.setSource(rs.getString(3));
+                rd.setTs(rs.getLong(4));
+                rc.add(rd);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return new ResponseEntity<ResourceCollection>(rc, HttpStatus.OK);
     }
 
     @RequestMapping("/elastic")
-    public ResponseEntity elastic() throws UnknownHostException {
+    public ResponseEntity elastic() {
         ResourceCollection rc = new ResourceCollection();
         Settings setting = Settings.EMPTY;
         TransportClient client = new PreBuiltTransportClient(setting);
-        client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+        try {
+            client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
         SearchResponse searchResponse = client.prepareSearch("csss").setTypes("comments").execute().actionGet();
         SearchHit[] hits = searchResponse.getHits().getHits();
         ResourceData rd = new ResourceData();
