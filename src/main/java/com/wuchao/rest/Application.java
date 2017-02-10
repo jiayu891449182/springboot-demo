@@ -1,27 +1,20 @@
 package com.wuchao.rest;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.beans.PropertyVetoException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.*;
-import java.util.Map;
 
 @SpringBootApplication
-@RestController
+@Controller
 public class Application {
 
     private static ComboPooledDataSource cpds;
@@ -43,15 +36,16 @@ public class Application {
         cpds.setMaxStatements(200);
     }
 
-    @RequestMapping("/")
-    public String greeting() {
-        return "Hello World!";
-    }
-
     @RequestMapping("/hello")
     public ResponseEntity hello() {
         ResourceData result = new ResourceData();
         return new ResponseEntity<ResourceData>(result, HttpStatus.OK);
+    }
+
+    @RequestMapping("/hello/{name}")
+    public String hello(@PathVariable("name") String name, Model model) {
+        model.addAttribute("name", name);
+        return "hello";
     }
 
     @RequestMapping("/data")
@@ -92,30 +86,6 @@ public class Application {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-        return new ResponseEntity<ResourceCollection>(rc, HttpStatus.OK);
-    }
-
-    @RequestMapping("/elastic")
-    public ResponseEntity elastic() {
-        ResourceCollection rc = new ResourceCollection();
-        Settings setting = Settings.EMPTY;
-        TransportClient client = new PreBuiltTransportClient(setting);
-        try {
-            client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-        SearchResponse searchResponse = client.prepareSearch("csss").setTypes("comments").execute().actionGet();
-        SearchHit[] hits = searchResponse.getHits().getHits();
-        ResourceData rd = new ResourceData();
-        for (SearchHit hit : hits) {
-            Map<String, Object> source = hit.getSource();
-            rd.setPlaycount(1000);
-            rd.setCmtcount(1000);
-            rd.setSource(source.get("source").toString());
-            rd.setTs(Long.valueOf(source.get("ts").toString()));
-            rc.add(rd);
         }
         return new ResponseEntity<ResourceCollection>(rc, HttpStatus.OK);
     }
