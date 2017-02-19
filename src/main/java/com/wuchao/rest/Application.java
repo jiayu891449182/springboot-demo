@@ -1,6 +1,7 @@
 package com.wuchao.rest;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
@@ -9,24 +10,32 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.beans.PropertyVetoException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 @SpringBootApplication
-@Controller
+@RestController
+//@Controller
 public class Application {
 
     private static ComboPooledDataSource cpds;
 
+    @Autowired
+    private UserDAO userDAO;
+
     static {
         cpds = new ComboPooledDataSource();
         try {
-            cpds.setDriverClass("org.postgresql.Driver");
+            cpds.setDriverClass("com.mysql.jdbc.Driver");
         } catch (PropertyVetoException e) {
             e.printStackTrace();
         }
-        cpds.setJdbcUrl("jdbc:postgresql://hostname:port/dbname");
+        cpds.setJdbcUrl("jdbc:mysql://hostname:port/dbname");
         cpds.setUser("username");
         cpds.setPassword("password");
         cpds.setInitialPoolSize(10);
@@ -34,6 +43,12 @@ public class Application {
         cpds.setMaxPoolSize(100);
         cpds.setMinPoolSize(10);
         cpds.setMaxStatements(200);
+    }
+
+    @RequestMapping("/")
+    public String index(Model map) {
+        map.addAttribute("host", "http://blog.didispace.com");
+        return "index";
     }
 
     @RequestMapping("/hello")
@@ -50,22 +65,21 @@ public class Application {
 
     @RequestMapping("/data")
     public ResponseEntity data() {
-        ResourceData rd = new ResourceData();
+        ResourceData user = new ResourceData();
         try {
             Connection connection = cpds.getConnection();
-            String sql = " select playcount, cmtcount, source, ts from playdata limit 1";
+            String sql = " select id, name, age from test limit 1";
             PreparedStatement st = connection.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
             while(rs.next()){
-                rd.setPlaycount(rs.getLong(1));
-                rd.setCmtcount(rs.getLong(2));
-                rd.setSource(rs.getString(3));
-                rd.setTs(rs.getLong(4));
+                user.setId(rs.getString(1));
+                user.setName(rs.getString(2));
+                user.setAge(rs.getString(3));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return new ResponseEntity<ResourceData>(rd, HttpStatus.OK);
+        return new ResponseEntity<ResourceData>(user, HttpStatus.OK);
     }
 
     @RequestMapping("/list")
@@ -73,21 +87,22 @@ public class Application {
         ResourceCollection rc = new ResourceCollection();
         try {
             Connection connection = cpds.getConnection();
-            String sql = " select playcount, cmtcount, source, ts from playdata limit 2";
+            String sql = " select id, name, age from test limit 1";
             PreparedStatement st = connection.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
             ResourceData rd = new ResourceData();
             while(rs.next()){
-                rd.setPlaycount(rs.getLong(1));
-                rd.setCmtcount(rs.getLong(2));
-                rd.setSource(rs.getString(3));
-                rd.setTs(rs.getLong(4));
                 rc.add(rd);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return new ResponseEntity<ResourceCollection>(rc, HttpStatus.OK);
+    }
+
+    @RequestMapping("/user")
+    public User findByUserName(){
+        return userDAO.findByName("lucy");
     }
 
     public static void main(String[] args) {
